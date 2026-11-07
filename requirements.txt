@@ -1,0 +1,9 @@
+geopandas>=1.0
+shapely>=2.0
+pyogrio
+pyproj
+pandas
+numpy
+pvlib>=0.11
+pillow
+remotezip

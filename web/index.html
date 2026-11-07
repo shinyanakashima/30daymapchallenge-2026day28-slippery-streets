@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Where the road feels slippery — Sapporo, winter solstice</title>
+<meta name="description" content="Streets in central Sapporo that get no direct sun on the winter solstice, computed from PLATEAU 3D building heights. #30DayMapChallenge 2026 Day 28: Senses — Feeling.">
+<meta property="og:title" content="Where the road feels slippery">
+<meta property="og:description" content="Streets in central Sapporo that get no direct sun on 22 December 2026, from PLATEAU 3D building heights.">
+<meta property="og:image" content="screenshot.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%233b6fb0'/%3E%3Crect x='3' y='7' width='10' height='2' fill='%23a8e1f7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="map" role="region" aria-label="Map"></div>
+
+<header class="panel title-panel">
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="ja" aria-pressed="false">日本語</button>
+  </div>
+  <h1 data-i18n="title">Where the road feels slippery</h1>
+  <p class="sub" data-i18n="subtitle">Central Sapporo on the winter solstice, 22 Dec 2026. Streets that buildings keep in shadow all day are where the ice stays.</p>
+  <div class="legend">
+    <div class="ramp" aria-hidden="true"></div>
+    <div class="ramp-labels">
+      <span style="left:0" data-i18n="legendNone">no sun</span>
+      <span style="left:35%">2.5 h</span>
+      <span style="left:64%">5 h</span>
+      <span style="left:100%">8 h+</span>
+    </div>
+    <p class="legend-note" data-i18n="legendNote">Minutes of direct sun between sunrise and sunset</p>
+  </div>
+  <div class="mode" role="group" aria-label="View">
+    <button type="button" data-mode="street" aria-pressed="true" data-i18n="modeStreet">By street</button>
+    <button type="button" data-mode="grid" aria-pressed="false" data-i18n="modeGrid">2 m grid</button>
+  </div>
+  <button type="button" class="about-btn" id="aboutBtn" data-i18n="about">About &amp; notes</button>
+</header>
+
+<aside class="panel stat-panel" aria-live="polite">
+  <div class="big" id="bigNumber">–</div>
+  <p data-i18n="statText">of street surface in this 3 × 3 km square gets no direct sun all day</p>
+</aside>
+
+<section class="panel time-panel">
+  <div class="time-row">
+    <button type="button" id="play" class="play" aria-label="Play">▶</button>
+    <label for="slider" class="time-label"><span id="timeText">12:00</span> <span class="sun-text" id="sunText"></span></label>
+    <label class="shadow-toggle"><input type="checkbox" id="showShadow" checked> <span data-i18n="shadows">shadows</span></label>
+  </div>
+  <input type="range" id="slider" min="0" max="0" step="1" value="0">
+  <div class="time-ends"><span id="riseText"></span><span id="setText"></span></div>
+</section>
+
+<dialog id="about">
+  <form method="dialog"><button class="close" aria-label="Close">×</button></form>
+  <div data-lang-block="en">
+    <h2>About this map</h2>
+    <p>In a Sapporo winter, the parts of a street that never see the sun stay icy long after the rest has melted. This map estimates those parts for the shortest day of the year.</p>
+    <h3>How it was computed</h3>
+    <ul>
+      <li>Sun azimuth and elevation every 10 minutes from sunrise to sunset on 22 December 2026 (pvlib).</li>
+      <li>Each PLATEAU building is treated as a flat-roofed prism. Its shadow is the footprint swept away from the sun by height ÷ tan(sun elevation). The ground is assumed flat.</li>
+      <li>Road surfaces (PLATEAU road model) are sampled on a 2 m grid; each cell counts the minutes it is outside every shadow.</li>
+      <li>Each road polygon shows the mean sunlit minutes and the share of its area that gets no sun at all.</li>
+    </ul>
+    <h3>Please note</h3>
+    <ul>
+      <li>This is an estimate from building shadows only. It is not an observation of where ice actually forms.</li>
+      <li>Trees, snow banks, signs and the terrain (including the mountains to the west) are not considered. Some central streets have road heating and stay clear even without sun.</li>
+    </ul>
+    <h3>Data</h3>
+    <ul>
+      <li>Buildings and roads: MLIT Project PLATEAU, Sapporo 3D city model (FY2020), processed by the author.</li>
+      <li>Street names: © OpenStreetMap contributors (ODbL).</li>
+    </ul>
+    <p class="small">#30DayMapChallenge 2026 · Day 28 · Senses: Feeling · <a href="https://github.com/shinyanakashima/30daymapchallenge-2026day28-slippery-streets">source code</a></p>
+  </div>
+  <div data-lang-block="ja" hidden>
+    <h2>この地図について</h2>
+    <p>冬の札幌では、日が当たらない道はまわりが解けても凍ったまま残ります。この地図は、1年でいちばん昼が短い日に、建物の影で日が当たらない道を推定したものです。</p>
+    <h3>計算方法</h3>
+    <ul>
+      <li>2026年12月22日の日の出から日の入りまで、10分ごとに太陽の方角と高さを求めました（pvlib）。</li>
+      <li>PLATEAU の建物を平らな屋根の柱とみなし、平面形を太陽と反対の方向へ「高さ ÷ tan（太陽の高さ）」だけずらした範囲を影としました。地面は平らとみなしています。</li>
+      <li>道路の面（PLATEAU 道路モデル）を2m の格子に分け、格子ごとにどの影にも入らない時間を数えました。</li>
+      <li>道路の面ごとに、日が当たる時間の平均と、1日中日が当たらない部分の割合を出しています。</li>
+    </ul>
+    <h3>ご注意</h3>
+    <ul>
+      <li>建物の影だけで計算した目安です。実際に凍っているかを観測したものではありません。</li>
+      <li>木、雪山、看板、地面の起伏（西側の山を含む）は考慮していません。札幌の中心部にはロードヒーティングの道もあり、日が当たらなくても凍らない場合があります。</li>
+    </ul>
+    <h3>出典</h3>
+    <ul>
+      <li>建物・道路: 国土交通省 Project PLATEAU 札幌市3D都市モデル（2020年度）を加工して作成</li>
+      <li>道路名: © OpenStreetMap contributors（ODbL）</li>
+    </ul>
+    <p class="small">#30DayMapChallenge 2026 · Day 28 · Senses: Feeling · <a href="https://github.com/shinyanakashima/30daymapchallenge-2026day28-slippery-streets">ソースコード</a></p>
+  </div>
+</dialog>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
