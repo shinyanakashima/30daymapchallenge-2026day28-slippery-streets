@@ -14,8 +14,8 @@
  "transit": "11:32",
  "max_elevation": 23.5,
  "road_area_m2": 2522224,
- "never_sunlit_share": 0.2311,
- "mean_sun_min": 86.3,
+ "never_sunlit_share": 0.2235,
+ "mean_sun_min": 113.8,
  "frames": [
   "0730",
   "0800",
@@ -54,10 +54,11 @@
    43.04385245515466
   ]
  ],
- "buildings_used": 40641,
+ "buildings_used": 40130,
  "height_source_counts": {
   "measured": 39878,
-  "storeys": 763
+  "none": 511,
+  "storeys": 252
  },
  "roads": 3543,
  "bbox": [

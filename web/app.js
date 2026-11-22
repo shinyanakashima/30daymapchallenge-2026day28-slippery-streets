@@ -66,6 +66,8 @@
       1, '#5c5480', 60, '#925e84', 150, '#d67a68', 300, '#f2aa52', 480, '#ffe08a'],
   ];
 
+  const VIEW_3D = { pitch: 50, bearing: -20 };
+
   let lang = 'en';
   try {
     const saved = localStorage.getItem('lang');
@@ -90,12 +92,12 @@
     zoom: 14.2,
     minZoom: 12.5,
     maxZoom: 19,
+    pitch: VIEW_3D.pitch,
+    bearing: VIEW_3D.bearing,
+    maxPitch: 70,
     attributionControl: false,
-    dragRotate: false,
-    pitchWithRotate: false,
   });
-  map.touchZoomRotate.disableRotation();
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
   map.addControl(new maplibregl.AttributionControl({
     compact: true,
     customAttribution: 'PLATEAU (MLIT), processed by the author · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -132,6 +134,17 @@
     map.setLayoutProperty('grid', 'visibility', mode === 'grid' ? 'visible' : 'none');
   }
   document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+  function setView(view) {
+    document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+    if (!map.getLayer('buildings-3d')) return;
+    const is3d = view === '3d';
+    map.setLayoutProperty('buildings-3d', 'visibility', is3d ? 'visible' : 'none');
+    map.setLayoutProperty('buildings', 'visibility', is3d ? 'none' : 'visible');
+    map.easeTo(is3d ? { pitch: VIEW_3D.pitch, bearing: VIEW_3D.bearing, duration: 800 }
+      : { pitch: 0, bearing: 0, duration: 800 });
+  }
+  document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
 
   $('aboutBtn').addEventListener('click', () => $('about').showModal());
 
@@ -223,6 +236,7 @@
     });
     map.addLayer({
       id: 'buildings', type: 'fill', source: 'buildings',
+      layout: { visibility: 'none' },
       paint: { 'fill-color': '#d3d7dc', 'fill-outline-color': '#bfc5cc' },
     });
     map.addLayer({
@@ -232,6 +246,17 @@
     map.addLayer({
       id: 'area-line', type: 'line', source: 'area',
       paint: { 'line-color': '#8a96a3', 'line-width': 1, 'line-dasharray': [3, 2] },
+    });
+    map.setLight({ anchor: 'map', position: [1.3, 200, 35], intensity: 0.35, color: '#ffffff' });
+    map.addLayer({
+      id: 'buildings-3d', type: 'fill-extrusion', source: 'buildings',
+      paint: {
+        'fill-extrusion-color': '#dadde1',
+        'fill-extrusion-height': ['get', 'h'],
+        'fill-extrusion-base': 0,
+        'fill-extrusion-opacity': 0.9,
+        'fill-extrusion-vertical-gradient': true,
+      },
     });
 
     PLACES.forEach((p) => {

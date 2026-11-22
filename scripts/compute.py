@@ -40,8 +40,9 @@ def load_buildings(area):
     b = b.set_crs(CRS_METRIC, allow_override=True)
     b["geometry"] = shapely.force_2d(b.geometry.values)
     b = b[b.intersects(area.buffer(CASTER_MARGIN_M))].copy()
-    h = b["measuredHeight"].where(b["measuredHeight"] > 0)
-    storeys = b["storeysAboveGround"].where(b["storeysAboveGround"] > 0)
+    # PLATEAU uses -9999 / 9999 for "unknown"; keep only plausible values
+    h = b["measuredHeight"].where(b["measuredHeight"].between(0, 1000, inclusive="neither"))
+    storeys = b["storeysAboveGround"].where(b["storeysAboveGround"].between(1, 200))
     b["height_src"] = np.where(h.notna(), "measured", np.where(storeys.notna(), "storeys", "none"))
     b["height"] = h.fillna(storeys * STOREY_HEIGHT_M)
     stats = b["height_src"].value_counts().to_dict()
